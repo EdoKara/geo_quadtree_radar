@@ -106,24 +106,24 @@ fn zcode_latlon_scalar_many_multithread(bencher: Bencher) {
     });
 }
 
-#[divan::bench(threads = false, args = [10, 100, 1000, 10000, 20000, 50000])]
+#[divan::bench(threads = false, args = [5, 10, 50, 100, 200,300,500])]
 fn zcode_latlon_simd_many_sthread(bencher: Bencher, len: i32) {
     bencher
-        .with_inputs(|| (generate_ll_seq(30, 37, len), generate_ll_seq(-87, -80, len)))
+        .with_inputs(|| generate_arraylike_seq(generate_ll_seq(30, 37, len), generate_ll_seq(-87, -80, len)))
         .bench_local_values(move |(lat_arry, lon_arry)| interleave_latlon(lat_arry.clone(), lon_arry.clone()));
 }
 
-#[divan::bench(threads=true, args = [10, 100, 1000, 10000, 20000, 50000])]
+#[divan::bench(threads=true, args = [5, 10, 50, 100, 200,300,500])]
 fn zcode_latlon_simd_many_mthread(bencher: Bencher, len: i32) {
     bencher
-        .with_inputs(|| (generate_ll_seq(30, 37, len), generate_ll_seq(-87, -80, len)))
+        .with_inputs(|| generate_arraylike_seq(generate_ll_seq(30, 37, len), generate_ll_seq(-87, -80, len)))
         .bench_values(move |(lat_arry, lon_arry)| {
             interleave_latlon(lat_arry.clone(), lon_arry.clone())
         });
 }
 
 // helper function to generate lat or lon sequences
-pub fn generate_ll_seq(start: i32, end: i32, ndec: i32) -> Vec<f64> {
+fn generate_ll_seq(start: i32, end: i32, ndec: i32) -> Vec<f64> {
     let mut outvec: Vec<f64> = Vec::new();
     for i in start..=end {
         for j in 0..=ndec {
@@ -132,4 +132,18 @@ pub fn generate_ll_seq(start: i32, end: i32, ndec: i32) -> Vec<f64> {
     }
 
     outvec
+}
+
+fn generate_arraylike_seq(lat: Vec<f64>, lon: Vec<f64>) -> (Vec<f64>, Vec<f64>){
+    let mut lon_out_arraylike: Vec<f64> = Vec::with_capacity(lat.len() * lon.len());
+    let mut lat_out_arraylike: Vec<f64> = Vec::with_capacity(lat.len() * lon.len());
+
+    for _ in 0..lon.len(){
+        lat_out_arraylike.extend(lat.clone().iter())
+    };
+    for _ in 0..lat.len(){
+        lon_out_arraylike.extend(lon.clone().iter())
+    };
+
+    (lat_out_arraylike, lon_out_arraylike)
 }

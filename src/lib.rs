@@ -1,7 +1,5 @@
 use std::arch::x86_64::{
-    __m512i, _mm512_and_si512, _mm512_loadu_epi32, _mm512_loadu_epi64, _mm512_or_si512,
-    _mm512_set_epi64, _mm512_set1_epi64, _mm512_slli_epi16, _mm512_slli_epi64, _mm512_store_epi64,
-    _mm512_storeu_epi64, _mm512_xor_si512,
+    __m512, __m512i, _mm512_and_si512, _mm512_div_ps, _mm512_loadu_epi32, _mm512_loadu_epi64, _mm512_loadu_ps, _mm512_or_si512, _mm512_set1_epi64, _mm512_set_epi64, _mm512_slli_epi16, _mm512_slli_epi64, _mm512_store_epi64, _mm512_storeu_epi64, _mm512_xor_si512
 };
 
 use fixed::FixedI32;
@@ -21,6 +19,16 @@ pub fn scale_lat(n: f64) -> f64 {
 pub fn scale_lon(n: f64) -> f64 {
     n / -180.
 }
+
+#[inline(always)]
+pub fn scale_lot_simd(word: __m512) -> __m512 {
+    let divisor = [-180_f32; 16];
+    unsafe{
+        let div = _mm512_loadu_ps(divisor.as_ptr());
+        _mm512_div_ps(word, div)
+    }
+}
+
 
 #[inline(always)]
 pub fn scalefix_lat(n: f64) -> FixedI32<U32> {

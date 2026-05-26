@@ -41,6 +41,11 @@ fn main() {
         "All values match each other: {:?}",
         &equivs.iter().all(|e| *e == true)
     );
+
+    println!("{}",(1 << 20) as i64);
+    println!("{}",(-81.23808_f64 / -180.));
+    println!("{}",((-81.23808_f64 / -180.) * (1 << 20) as f64));
+    println!("{}",((-81.23808_f64 / -180.)* (1 << 20) as f64) as i32);
 }
 
 fn generate_ll_seq(start: i32, end: i32, ndec: i32) -> Vec<f64> {
